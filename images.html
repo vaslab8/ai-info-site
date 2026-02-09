@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сравнение генераций изображений | Нейросети для всех</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #202a58;
+            --accent: #ff6584;
+            --light: #f8f9fa;
+            --dark: #1a1a2e;
+            --gray: #6c757d;
+            --success: #28a745;
+            --error:  #cd1a1a;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        header {
+            position: relative;
+            background: url('fon.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-controls a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            padding: 8px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-controls a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            position: relative;
+        }
+
+        .nav-btn > a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: var(--transition);
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn > a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 220px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .nav-btn:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: rgba(32, 42, 88, 0.1);
+            color: var(--primary);
+            padding-left: 25px;
+        }
+
+        .dropdown-menu a i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--dark);
+            z-index: 1001;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-menu-header {
+            position: relative;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: url('fon.png') no-repeat center center;
+            background-size: cover;
+            min-height: 80px;
+        }
+
+        .mobile-menu-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+
+        .mobile-menu-logo {
+            position: relative;
+            z-index: 1;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-menu-logo img {
+            height: 2em;
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .mobile-menu-close {
+            position: relative;
+            z-index: 1;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-nav {
+            padding: 1rem;
+        }
+
+        .mobile-nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .mobile-nav-item > a {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .mobile-nav-item > a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-dropdown-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .mobile-dropdown-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-dropdown-menu {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-top: 5px;
+            padding: 10px;
+        }
+
+        .mobile-dropdown-menu.show {
+            display: block;
+        }
+
+        .mobile-dropdown-menu a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .mobile-dropdown-menu a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .hero {
+            padding: 5rem 0;
+            background: url('fon.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.7);
+            border-color: white;
+        }
+
+        .comparison {
+            padding: 5rem 0;
+            background-color: white;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .example {
+            text-align: left;
+            background-color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .comparison-table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            table-layout: fixed;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid #eaeaea;
+            vertical-align: middle;
+        }
+
+        .comparison-table thead {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .comparison-table thead th {
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 1.5rem;
+            width: 25%;
+        }
+
+        .comparison-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .comparison-table tbody tr:hover {
+            background-color: #f0f2ff;
+            transition: var(--transition);
+        }
+
+        .comparison-table td:first-child {
+            font-weight: 600;
+            color: var(--dark);
+            background-color: #f8f9fa;
+            text-align: left;
+            width: 25%;
+        }
+
+        .comparison-img {
+            width: 100%;
+            max-width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 9px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .comparison-img:hover {
+            transform: scale(1.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .application-example {
+            padding: 5rem 0;
+            background-color: white;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            text-align: left;
+            color: var(--dark);
+        }
+
+        .intro-text p {
+            margin-bottom: 1.5rem;
+        }
+
+        .intro-text h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 3rem 0 1.5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #aaa;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .main-nav {
+                gap: 10px;
+            }
+            
+            .nav-btn > a {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .comparison-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .comparison-table th,
+            .comparison-table td {
+                min-width: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                flex: 1;
+                justify-content: flex-start;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .btn {
+                display: block;
+                margin: 10px auto;
+                width: 80%;
+                max-width: 250px;
+            }
+            
+            .main-nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .comparison-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html" target="_blank"><img src=".\icon.png" style="height: 2.5em; width: auto;"></a>
+                    Нейросети для всех
+                </div>
+                
+                <nav class="main-nav">
+                    <div class="nav-btn">
+                        <a href="#">Изображения <i class="fas fa-paint-brush"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="images.html" target="_blank">Обзор</a>
+                            <a href="kandinsky.html" target="_blank">Kandinsky</a>
+                            <a href="craiyon.html" target="_blank">Craiyon</a>
+                            <a href="shedevrum.html" target="_blank">Шедеврум</a>
+                            <a href="im5.html" target="_blank">Сравнение генераций</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-btn">
+                        <a href="#">Аудио <i class="fas fa-music"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="audio.html" target="_blank">Обзор</a>
+                            <a href="music_k.html" target="_blank">GigaChat</a>
+                            <a href="suno.html" target="_blank">Suno</a>
+                            <a href="aiva.html" target="_blank">Aiva</a>
+                            <a href="aud5.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-btn">
+                        <a href="#">Видео <i class="fas fa-video"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="video.html" target="_blank">Обзор</a>
+                            <a href="v_kand.html" target="_blank">Kandinsky</a>
+                            <a href="alisa.html" target="_blank">Алиса AI</a>
+                            <a href="runway.html" target="_blank">Runway</a>
+                            <a href="qwen.html" target="_blank">Qwen</a>
+                            <a href="vid5.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-btn">
+                        <a href="#">Презентации <i class="fas fa-book-open"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="prezentations.html" target="_blank">Обзор</a>
+                            <a href="gamma.html" target="_blank">Gamma</a>
+                            <a href="slidy.html" target="_blank">Slidy</a>
+                            <a href="giga_prez.html" target="_blank">GigaChat</a>
+                            <a href="pr5.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                    
+                    <div class="nav-btn">
+                        <a href="#">Текст <i class="fas fa-pen"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="no.html" target="_blank">Обзор</a>
+                            <a href="no.html" target="_blank">Kandinsky</a>
+                            <a href="no.html" target="_blank">Алиса AI</a>
+                            <a href="no.html" target="_blank">Deepseek</a>
+                            <a href="no.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                </nav>
+                
+                <div class="nav-controls">
+                    <a href="index.html" title="На главную"><i class="fas fa-home"></i></a>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    <div class="mobile-menu-container" id="mobileMenuContainer">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <img src=".\icon.png" alt="Иконка">
+                Нейросети для всех
+            </div>
+            <button class="mobile-menu-close" id="mobileMenuClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Изображения <i class="fas fa-paint-brush"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="images.html" target="_blank">Обзор</a>
+                    <a href="kandinsky.html" target="_blank">Kandinsky</a>
+                    <a href="craiyon.html" target="_blank">Craiyon</a>
+                    <a href="shedevrum.html" target="_blank">Шедеврум</a>
+                    <a href="im5.html" target="_blank">Сравнение генераций</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Аудио <i class="fas fa-music"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="audio.html" target="_blank">Обзор</a>
+                    <a href="music_k.html" target="_blank">GigaChat</a>
+                    <a href="suno.html" target="_blank">Suno</a>
+                    <a href="aiva.html" target="_blank">Aiva</a>
+                    <a href="aud5.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Видео <i class="fas fa-video"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="video.html" target="_blank">Обзор</a>
+                    <a href="v_kand.html" target="_blank">Kandinsky</a>
+                    <a href="alisa.html" target="_blank">Алиса AI</a>
+                    <a href="runway.html" target="_blank">Runway</a>
+                    <a href="qwen.html" target="_blank">Qwen</a>
+                    <a href="vid5.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Презентации <i class="fas fa-book-open"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="prezentations.html" target="_blank">Обзор</a>
+                    <a href="gamma.html" target="_blank">Gamma</a>
+                    <a href="slidy.html" target="_blank">Slidy</a>
+                    <a href="giga_prez.html" target="_blank">GigaChat</a>
+                    <a href="pr5.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Текст <i class="fas fa-pen"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="no.html" target="_blank">Обзор</a>
+                    <a href="no.html" target="_blank">Kandinsky</a>
+                    <a href="no.html" target="_blank">Алиса AI</a>
+                    <a href="no.html" target="_blank">Deepseek</a>
+                    <a href="no.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Сравнение генераций изображений</h1>
+                <p>Анализ качества и особенностей генерации изображений разными нейросетями</p>
+                <a href="#comparison" class="btn">Смотреть сравнение</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="comparison" id="comparison">
+        <div class="container">
+            <div class="section-title">
+                <h2>Сравнение качества генерации</h2>
+                <p>В таблице представлены примеры изображений, созданных разными нейросетями по одному запросу, направленному на выявление определённых особенностей.</p>
+                <p>Для подробного изучения откройте изображения в отдельной вкладке.</p>
+            </div>
+            <div class="comparison-table-container">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Запрос / Нейросеть</th>
+                            <th>Шедеврум</th>
+                            <th>Craiyon*</th>
+                            <th>Kandinsky</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Полосатый кот сидит на ветке сакуры и смотрит на древний японский замок, окруженный цветущей вишней. Ночь, в небе летит дракон. Стиль акварельной живописи.</td>
+                            <td><img src=".\comparison\shedevr1.jpg" alt="Шедеврум - Запрос 1" class="comparison-img"></td>
+                            <td><img src=".\comparison\cr1.png" alt="Craiyon - Запрос 1" class="comparison-img"></td>
+                            <td><img src=".\comparison\kand1.jpg" alt="Kandinsky - Запрос 1" class="comparison-img"></td>
+                        </tr>
+                        <tr>
+                            <td>Картина в стиле Ван Гога. Красный кирпичный дом.</td>
+                            <td><img src=".\comparison\shedevr3.png" alt="Шедеврум - Запрос 2" class="comparison-img"></td>
+                            <td><img src=".\comparison\cr3.png" alt="Craiyon - Запрос 2" class="comparison-img"></td>
+                            <td><img src=".\comparison\kand3.jpg" alt="Kandinsky - Запрос 2" class="comparison-img"></td>
+                        </tr>
+                        <tr>
+                            <td>Абстракция.</td>
+                            <td><img src=".\comparison\shedevr4.jpg" alt="Шедеврум - Запрос 3" class="comparison-img"></td>
+                            <td><img src=".\comparison\cr4.png" alt="Craiyon - Запрос 3" class="comparison-img"></td>
+                            <td><img src=".\comparison\kand4.jpg" alt="Kandinsky - Запрос 3" class="comparison-img"></td>
+                        </tr>
+                        <tr>
+                            <td>Молодой человек держится за свои темные очки. На нём шляпа и пальто.</td>
+                            <td><img src=".\comparison\shedevr5.jpg" alt="Шедеврум - Запрос 4" class="comparison-img"></td>
+                            <td><img src=".\comparison\cr5.png" alt="Craiyon - Запрос 4" class="comparison-img"></td>
+                            <td><img src=".\comparison\kand5.jpg" alt="Kandinsky - Запрос 4" class="comparison-img"></td>
+                        </tr>
+                        <tr>
+                            <td>Надпись "future" из облаков.</td>
+                            <td><img src=".\comparison\shedevr6.jpg" alt="Шедеврум - Запрос 5" class="comparison-img"></td>
+                            <td><img src=".\comparison\cr6.png" alt="Craiyon - Запрос 5" class="comparison-img"></td>
+                            <td><img src=".\comparison\kand6.jpg" alt="Kandinsky - Запрос 5" class="comparison-img"></td>
+                        </tr>
+                        <tr>
+                            <td>Очень длинный, детализированный запрос.**</td>
+                            <td><img src=".\comparison\shedevr2.jpg" alt="Шедеврум - Запрос 6" class="comparison-img"></td>
+                            <td><img src=".\comparison\cr2.png" alt="Craiyon - Запрос 6" class="comparison-img"></td>
+                            <td><img src=".\comparison\kand2.jpg" alt="Kandinsky - Запрос 6" class="comparison-img"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="example">*Для Craiyon запросы вводились на английском языке.</div>
+            <div class="example">**Заброшенный город богов в кристаллическом каньоне. Последний страж-автоматон, собранный из древней латуни, тёмного эбенового дерева и застывших световых сплетений, в немой скорби замер на обломках мраморного моста. Врата, которые он веками охранял, теперь лишь груда резных базальтовых колонн, оплетённых сияющей голубой глицинией. На переднем плане, у ног стража, лежит рассыпавшийся свиток с угасающими рунами и опрокинутый хрустальный светильник, из которого вытекает последняя капля жидкого света. Мелкие обломки кристаллов и каменной мозаики устилают землю, отражая призрачное сияние. На заднем плане видны ярусы пустых дворцов и башен, высеченных прямо в стенах розового кварца и аметиста. Сквозь их разбитые окна пробивается ветер, гуляя по бесконечным галереям. Всё это освещено холодным, застывшим светом двойного затмения: огромной луны, наполовину скрытой огненным кольцом древней планета. Стиль: эпический фэнтези-арт, высочайшая детализация, драматичное освещение, глубокая меланхоличная атмосфера.</div>
+        </div>
+    </section>
+
+    <section class="application-example">
+        <div class="container">
+            <div class="section-title">
+                <h2>Анализ таблицы</h2>
+            </div>
+            <div class="intro-text">
+                <h3>Шедеврум</h3>
+                <p>Нейросеть справляется с реалистичным изображением человека. Но в таблице видна "стилевая зависимость": в отличие от других сервисов изображения наиболее приближены к фотореализму, даже при иных выбранных стилях. Текст на изображениях генерируется ошибочно. Длинный запрос нейросеть не принимает, ограничивает и сокращает. Сокращая запрос, выводит неоправдывающий ожидания результат.</p>
+                <h3>Craiyon</h3>
+                <p>Сильнее конкурентов с точки зрения приближённости к заданному стилю. Однако изображения генерирует более низкого разрешения. Возникают технические ошибки: абсолютно неверный и нечитаемый текст на изображении, ошибки при восприятии длинного запроса, приводящие к неоправдывающему ожидания пользователя результату.</p>
+                <h3>Kandinsky</h3>
+                <p>Соответствие заданному стилю, реалистичный, "живой" человек. Единственный сервис, сгенерировавший соответствующий результат длинному запросу изображение и верный текст на изображении.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>О проекте</h3>
+                    <p>Сайт создан для помощи пользователям в поиске подходящих нейросетей для решения их задач. Мы стремимся сделать искусственный интеллект доступным для всех.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Другие категории</h3>
+                    <ul class="footer-links">
+                        <li><a href="video.html">Создание видео</a></li>
+                        <li><a href="no.html">Работа с текстом</a></li>
+                        <li><a href="prezentations.html">Создание презентаций</a></li>
+                        <li><a href="audio.html">Работа с аудио</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Нейросети для всех. Проект создан для демонстрации возможностей ИИ</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const mobileMenuContainer = document.getElementById('mobileMenuContainer');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileDropdowns = document.querySelectorAll('.mobile-nav-item');
+
+        function openMobileMenu() {
+            mobileMenuOverlay.style.display = 'block';
+            mobileMenuContainer.style.display = 'block';
+            
+            setTimeout(() => {
+                mobileMenuOverlay.style.opacity = '1';
+                mobileMenuContainer.style.right = '0';
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            mobileMenuOverlay.style.opacity = '0';
+            mobileMenuContainer.style.right = '-300px';
+            
+            setTimeout(() => {
+                mobileMenuOverlay.style.display = 'none';
+                mobileMenuContainer.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                document.querySelectorAll('.mobile-dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }, 300);
+        }
+
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+        document.querySelectorAll('.mobile-dropdown-menu a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
+        mobileDropdowns.forEach(item => {
+            const link = item.querySelector('a');
+            const dropdown = item.querySelector('.mobile-dropdown-menu');
+            
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && dropdown) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('show');
+                }
+            });
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroContent = document.querySelector('.hero-content');
+            if (heroContent) {
+                heroContent.style.opacity = 0;
+                heroContent.style.transform = 'translateY(20px)';
+                heroContent.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                
+                setTimeout(() => {
+                    heroContent.style.opacity = 1;
+                    heroContent.style.transform = 'translateY(0)';
+                }, 300);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroBtn = document.querySelector('.hero .btn');
+            if (heroBtn) {
+                heroBtn.style.opacity = 0;
+                heroBtn.style.transform = 'translateY(20px)';
+                heroBtn.style.transition = 'opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s';
+                
+                setTimeout(() => {
+                    heroBtn.style.opacity = 1;
+                    heroBtn.style.transform = 'translateY(0)';
+                }, 600);
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableRows = document.querySelectorAll('.comparison-table tbody tr');
+            tableRows.forEach((row, index) => {
+                row.style.opacity = 0;
+                row.style.transform = 'translateX(-20px)';
+                row.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+                
+                setTimeout(() => {
+                    observer.observe(row);
+                }, 300);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const appSection = document.querySelector('.application-example .container');
+            if (appSection) {
+                appSection.style.opacity = 0;
+                appSection.style.transform = 'translateY(30px)';
+                appSection.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                
+                const appObserver = new IntersectionObserver(function(entries) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            setTimeout(() => {
+                                entry.target.style.opacity = 1;
+                                entry.target.style.transform = 'translateY(0)';
+                            }, 300);
+                            appObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                setTimeout(() => {
+                    appObserver.observe(appSection);
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

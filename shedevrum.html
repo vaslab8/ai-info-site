@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shedevrum | Нейросети для всех</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #202a58;
+            --accent: #ff6584;
+            --light: #f8f9fa;
+            --dark: #1a1a2e;
+            --gray: #6c757d;
+            --success: #28a745;
+            --error:  #cd1a1a;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        header {
+            position: relative;
+            background: url('fon.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-controls a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            padding: 8px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-controls a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            position: relative;
+        }
+
+        .nav-btn > a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: var(--transition);
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn > a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 220px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .nav-btn:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: rgba(32, 42, 88, 0.1);
+            color: var(--primary);
+            padding-left: 25px;
+        }
+
+        .dropdown-menu a i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--dark);
+            z-index: 1001;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-menu-header {
+            position: relative;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: url('fon.png') no-repeat center center;
+            background-size: cover;
+            min-height: 80px;
+        }
+
+        .mobile-menu-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+
+        .mobile-menu-logo {
+            position: relative;
+            z-index: 1;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-menu-logo img {
+            height: 2em;
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .mobile-menu-close {
+            position: relative;
+            z-index: 1;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-nav {
+            padding: 1rem;
+        }
+
+        .mobile-nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .mobile-nav-item > a {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .mobile-nav-item > a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-dropdown-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .mobile-dropdown-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-dropdown-menu {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-top: 5px;
+            padding: 10px;
+        }
+
+        .mobile-dropdown-menu.show {
+            display: block;
+        }
+
+        .mobile-dropdown-menu a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .mobile-dropdown-menu a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .hero {
+            padding: 5rem 0;
+            background: url('fon.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.7);
+            border-color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid white;
+            margin-left: 15px;
+        }
+
+        .btn-outline:hover {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        .overview {
+            padding: 5rem 0;
+            background-color: white;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .overview-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .overview-text {
+            font-size: 1.1rem;
+        }
+
+        .overview-image {
+            text-align: center;
+        }
+
+        .overview-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .features {
+            padding: 5rem 0;
+            background-color: #f8f9fa;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pros-cons {
+            padding: 5rem 0;
+            background-color: white;
+        }
+
+        .pros-cons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .pros, .cons {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .pros h3, .cons h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .pros h3 {
+            color: var(--success);
+        }
+
+        .cons h3 {
+            color: var(--error);
+        }
+
+        .pros h3 i, .cons h3 i {
+            margin-right: 10px;
+        }
+
+        .pros-list, .cons-list {
+            list-style: none;
+        }
+
+        .pros-list li, .cons-list li {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .pros-list li::before {
+            content: '+';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .cons-list li::before {
+            content: '–';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .tutorial {
+            padding: 5rem 0;
+            background-color: #f8f9fa;
+        }
+
+        .tutorial-steps {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tutorial-step {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .tutorial-step:hover {
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .tutorial-step h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .tutorial-image {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .tutorial-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .example {
+            background-color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .example-generation {
+            padding: 5rem 0;
+            background-color: white;
+        }
+
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 3rem 0 1.5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #aaa;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .main-nav {
+                gap: 10px;
+            }
+            
+            .nav-btn > a {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .overview-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .pros-cons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                flex: 1;
+                justify-content: flex-start;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .btn {
+                display: block;
+                margin: 10px auto;
+                width: 80%;
+                max-width: 250px;
+            }
+
+            .btn-outline {
+                margin-left: 0;
+            }
+            
+            .main-nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html" target="_blank"><img src=".\icon.png" style="height: 2.5em; width: auto;"></a>
+                    Нейросети для всех
+                </div>
+                
+                <nav class="main-nav">
+                    <div class="nav-btn">
+                        <a href="#">Изображения <i class="fas fa-paint-brush"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="images.html" target="_blank">Обзор</a>
+                            <a href="kandinsky.html" target="_blank">Kandinsky</a>
+                            <a href="craiyon.html" target="_blank">Craiyon</a>
+                            <a href="shedevrum.html" target="_blank">Шедеврум</a>
+                            <a href="im5.html" target="_blank">Сравнение генераций</a>
+                        </div>
+                    </div>
+                    <div class="nav-btn">
+                        <a href="#">Аудио <i class="fas fa-music"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="audio.html" target="_blank">Обзор</a>
+                            <a href="music_k.html" target="_blank">GigaChat</a>
+                            <a href="suno.html" target="_blank">Suno</a>
+                            <a href="aiva.html" target="_blank">Aiva</a>
+                            <a href="aud5.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                    <div class="nav-btn">
+                        <a href="#">Видео <i class="fas fa-video"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="video.html" target="_blank">Обзор</a>
+                            <a href="v_kand.html" target="_blank">Kandinsky</a>
+                            <a href="alisa.html" target="_blank">Алиса AI</a>
+                            <a href="runway.html" target="_blank">Runway</a>
+                            <a href="qwen.html" target="_blank">Qwen</a>
+                            <a href="vid5.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                    <div class="nav-btn">
+                        <a href="#">Презентации <i class="fas fa-book-open"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="prezentations.html" target="_blank">Обзор</a>
+                            <a href="gamma.html" target="_blank">Gamma</a>
+                            <a href="slidy.html" target="_blank">Slidy</a>
+                            <a href="giga_prez.html" target="_blank">GigaChat</a>
+                            <a href="pr5.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                    <div class="nav-btn">
+                        <a href="#">Текст <i class="fas fa-pen"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="no.html" target="_blank">Обзор</a>
+                            <a href="no.html" target="_blank">Kandinsky</a>
+                            <a href="no.html" target="_blank">Алиса AI</a>
+                            <a href="no.html" target="_blank">Deepseek</a>
+                            <a href="no.html" target="_blank">Сравнение</a>
+                        </div>
+                    </div>
+                </nav>
+                
+                <div class="nav-controls">
+                    <a href="index.html" title="На главную"><i class="fas fa-home"></i></a>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    <div class="mobile-menu-container" id="mobileMenuContainer">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <img src=".\icon.png" alt="Иконка">
+                Нейросети для всех
+            </div>
+            <button class="mobile-menu-close" id="mobileMenuClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Изображения <i class="fas fa-paint-brush"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="images.html" target="_blank">Обзор</a>
+                    <a href="kandinsky.html" target="_blank">Kandinsky</a>
+                    <a href="craiyon.html" target="_blank">Craiyon</a>
+                    <a href="shedevrum.html" target="_blank">Шедеврум</a>
+                    <a href="im5.html" target="_blank">Сравнение генераций</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Аудио <i class="fas fa-music"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="audio.html" target="_blank">Обзор</a>
+                    <a href="music_k.html" target="_blank">GigaChat</a>
+                    <a href="suno.html" target="_blank">Suno</a>
+                    <a href="aiva.html" target="_blank">Aiva</a>
+                    <a href="aud5.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Видео <i class="fas fa-video"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="video.html" target="_blank">Обзор</a>
+                    <a href="v_kand.html" target="_blank">Kandinsky</a>
+                    <a href="alisa.html" target="_blank">Алиса AI</a>
+                    <a href="runway.html" target="_blank">Runway</a>
+                    <a href="qwen.html" target="_blank">Qwen</a>
+                    <a href="vid5.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Презентации <i class="fas fa-book-open"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="prezentations.html" target="_blank">Обзор</a>
+                    <a href="gamma.html" target="_blank">Gamma</a>
+                    <a href="slidy.html" target="_blank">Slidy</a>
+                    <a href="giga_prez.html" target="_blank">GigaChat</a>
+                    <a href="pr5.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item">
+                <a href="#">
+                    Текст <i class="fas fa-pen"></i>
+                </a>
+                <div class="mobile-dropdown-menu">
+                    <a href="no.html" target="_blank">Обзор</a>
+                    <a href="no.html" target="_blank">Kandinsky</a>
+                    <a href="no.html" target="_blank">Алиса AI</a>
+                    <a href="no.html" target="_blank">Deepseek</a>
+                    <a href="no.html" target="_blank">Сравнение</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Shedevrum - генератор изображений от Яндекса</h1>
+                <p>Создавайте уникальные изображения, цифровой арт и обрабатывайте фотографии с помощью мощной модели YandexART</p>
+                <a href="https://shedevrum.ai" target="_blank" class="btn btn-outline">Перейти к Shedevrum</a>
+                <a href="#tutorial" class="btn btn-outline">Как использовать</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="overview" id="overview">
+        <div class="container">
+            <div class="section-title">
+                <h2>Обзор Shedevrum</h2>
+                <p>Узнайте о возможностях этого мощного генератора изображений</p>
+            </div>
+            <div class="overview-content">
+                <div class="overview-text">
+                    <p>Shedevrum — это сервис-конструктор для генерации и редактирования изображений с помощью нейросетей, построенный на мощной модели YandexART от Яндекса.</p>
+                    <p>Сервис позволяет создавать уникальные картинки, цифровой арт и обрабатывать фотографии по текстовому описанию или примеру.</p>
+                    <p>Благодаря интеграции с экосистемой Яндекса, пользователи могут легко начать работу и быстро публиковать результаты в Яндекс.Дзен.</p>
+                    <p>Shedevrum предоставляет начальные бесплатные возможности для тестирования, что делает его доступным для всех желающих.</p>
+                </div>
+                <div class="overview-image">
+                    <img src=".\s.png" alt="Shedevrum - генератор изображений">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Ключевые возможности</h2>
+                <p>Основные функции, которые делают Shedevrum мощным инструментом</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-paint-brush"></i>
+                    <h3>Высокое качество и детализация</h3>
+                    <p>YandexART — одна из сильнейших моделей, генерирует изображения с высокой проработкой деталей, фотореалистичностью и художественной ценностью.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-sliders-h"></i>
+                    <h3>Гибкость управления</h3>
+                    <p>Продвинутый контроль над результатом через текстовые запросы, стили, настройку формата изображения.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-palette"></i>
+                    <h3>Предлагает 4 варианта генерации</h3>
+                    <p>Одну или несколько из них можно опубликовать. При публикации изображение автоматически становится более чётким и качественным. .</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <h3>Интуитивный интерфейс</h3>
+                    <p>Удобный и понятный сайт, не требующий специальных технических знаний.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fab fa-yandex"></i>
+                    <h3>Сообщество</h3>
+                    <p>Возможность следить за творчеством других пользовалей и выставлять своё. Наличие ленты с прописанными промтами под постами.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-gift"></i>
+                    <h3>Бесплатный старт</h3>
+                    <p>Предоставляются начальные бесплатные возможности для тестирования.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pros-cons" id="pros-cons">
+        <div class="container">
+            <div class="section-title">
+                <h2>Плюсы и минусы</h2>
+                <p>Объективный взгляд на сильные и слабые стороны Shedevrum</p>
+            </div>
+            <div class="pros-cons-grid">
+                <div class="pros">
+                    <h3><i class="fas fa-plus-circle"></i> Плюсы</h3>
+                    <ul class="pros-list">
+                        <li>Высокое качество и детализация: YandexART — одна из сильнейших моделей, генерирует изображения с высокой проработкой деталей, фотореалистичностью и художественной ценностью.</li>
+                        <li>Гибкость управления: продвинутый контроль над результатом через текстовые запросы (промпты), стили и референсы.</li>
+                        <li>Сервиз также является своеобразной социальной сетью, где пользователи могут выставлять своё творчество и оценивать/скачивать работы других.</li>
+                        <li>Интуитивный интерфейс: удобный и понятный сайт, не требующий специальных технических знаний.</li>
+                        <li>Бесплатный старт: предоставляются начальные бесплатные возможности для тестирования.</li>
+                        <li>Есть возможность правки или генерации промта.</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h3><i class="fas fa-minus-circle"></i> Минусы</h3>
+                    <ul class="cons-list">
+                        <li>Очередь на генерацию: в пиковые часы или при использовании бесплатного тарифа generation может занимать некоторое время в очереди.</li>
+                        <li>Ограничения по контенту: строгая модерация запросов. Невозможно генерировать контент, нарушающий политики (насилие, взрослый контент и т.д.).</li>
+                        <li>Ограничения бесплатного тарифа: для активного использования скорее всего потребуется платная подписка.</li>
+                        <li>"Стилевая" зависимость от YandexART: иногда в изображениях может угадываться "почерк" исходной модели, даже при указании других стилей. В основном изображения генерируются в стиле фотореализма.
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tutorial" id="tutorial">
+        <div class="container">
+            <div class="section-title">
+                <h2>Как использовать Shedevrum</h2>
+                <p>Пошаговая инструкция по работе с генератором изображений</p>
+            </div>
+            <div class="tutorial-steps">
+                <div class="tutorial-step">
+                    <div class="step-number">1</div>
+                    <h3>Задайте идею</h3>
+                    <div class="tutorial-image">
+                        <img src=".\sh1.png" alt="Задайте идею в Shedevrum.">
+                    </div>
+                    <p>Перейдите на сайт shedevrum.ai.</p>
+                    <p>Введите ваш запрос (промпт) на русском или английском в строку. Чем точнее опишете, тем лучше результат.</p>
+                    <div class="example">
+                        Пример: «Космонавт катается на скейте в стиле поп-арт».
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">2</div>
+                    <h3>Сгенерируйте и скачайте</h3>
+                    <div class="tutorial-image">
+                        <img src=".\sh2.png" alt="Сгенерируйте и скачайте изображение.">
+                    </div>
+                    <p>Выбрав соотношение сторон изображения, нажмите кнопку «Создать».</p>
+                    <p>Подождите несколько секунд, нейросеть предложит 4 варианта.</p>
+                    <p>Выберите понравившийся вариант, чтобы открыть его, и нажмите значок скачивания.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>О проекте</h3>
+                    <p>Сайт создан для помощи пользователям в поиске подходящих нейросетей для решения их задач. Мы стремимся сделать искусственный интеллект доступным для всех.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Другие категории</h3>
+                    <ul class="footer-links">
+                        <li><a href="video.html">Создание видео</a></li>
+                        <li><a href="no.html">Работа с текстом</a></li>
+                        <li><a href="prezentations.html">Создание презентаций</a></li>
+                        <li><a href="audio.html">Работа с аудио</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Нейросети для всех. Проект создан для демонстрации возможностей ИИ</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const mobileMenuContainer = document.getElementById('mobileMenuContainer');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileDropdowns = document.querySelectorAll('.mobile-nav-item');
+
+        function openMobileMenu() {
+            mobileMenuOverlay.style.display = 'block';
+            mobileMenuContainer.style.display = 'block';
+            
+            setTimeout(() => {
+                mobileMenuOverlay.style.opacity = '1';
+                mobileMenuContainer.style.right = '0';
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            mobileMenuOverlay.style.opacity = '0';
+            mobileMenuContainer.style.right = '-300px';
+            
+            setTimeout(() => {
+                mobileMenuOverlay.style.display = 'none';
+                mobileMenuContainer.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                document.querySelectorAll('.mobile-dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }, 300);
+        }
+
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+        document.querySelectorAll('.mobile-dropdown-menu a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
+        mobileDropdowns.forEach(item => {
+            const link = item.querySelector('a');
+            const dropdown = item.querySelector('.mobile-dropdown-menu');
+            
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && dropdown) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('show');
+                }
+            });
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                    entry.target.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroContent = document.querySelector('.hero-content');
+            if (heroContent) {
+                heroContent.style.opacity = 0;
+                heroContent.style.transform = 'translateY(30px)';
+                heroContent.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                
+                setTimeout(() => {
+                    heroContent.style.opacity = 1;
+                    heroContent.style.transform = 'translateY(0)';
+                }, 300);
+            }
+
+            const overviewElements = document.querySelectorAll('.overview .section-title, .overview-content');
+            overviewElements.forEach((el, index) => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                observer.observe(el);
+            });
+
+            document.querySelectorAll('.feature-card').forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                observer.observe(el);
+            });
+
+            document.querySelectorAll('.tutorial-step').forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                observer.observe(el);
+            });
+
+            document.querySelectorAll('.pros, .cons').forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                observer.observe(el);
+            });
+
+            const exampleSection = document.querySelector('.example-generation .section-title');
+            if (exampleSection) {
+                exampleSection.style.opacity = 0;
+                exampleSection.style.transform = 'translateY(20px)';
+                observer.observe(exampleSection);
+            }
+
+            const exampleImage = document.querySelector('.example-generation .tutorial-step');
+            if (exampleImage) {
+                exampleImage.style.opacity = 0;
+                exampleImage.style.transform = 'translateY(20px)';
+                observer.observe(exampleImage);
+            }
+        });
+
+        document.querySelectorAll('.feature-card, .tutorial-step, .pros, .cons, .overview .section-title, .overview-content, .example-generation .section-title, .example-generation .tutorial-step').forEach(el => {
+
+            if (el.style.opacity !== '0') {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+            }
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
